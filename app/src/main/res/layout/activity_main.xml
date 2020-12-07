@@ -231,34 +231,34 @@
             android:contentDescription="@string/todo"
             android:src="@mipmap/ic_github" />
 
-        <TextView
-            android:id="@+id/textView6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_margin="2dp"
-            android:text="@string/github_1"
-            android:textColor="#858585" />
+<!--        <TextView-->
+<!--            android:id="@+id/textView6"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center_vertical"-->
+<!--            android:layout_margin="2dp"-->
+<!--            android:text="@string/github_1"-->
+<!--            android:textColor="#858585" />-->
 
-        <TextView
-            android:id="@+id/textView7"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:paddingBottom="1dp"
-            android:text="@string/star_1"
-            android:textColor="#dfaa6a" />
+<!--        <TextView-->
+<!--            android:id="@+id/textView7"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center_vertical"-->
+<!--            android:paddingBottom="1dp"-->
+<!--            android:text="@string/star_1"-->
+<!--            android:textColor="#dfaa6a" />-->
 
-        <TextView
-            android:id="@+id/textView8"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"
-            android:text="@string/star_2"
-            android:textColor="#dfaa6a"
-            android:textStyle="bold" />
+<!--        <TextView-->
+<!--            android:id="@+id/textView8"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center_vertical"-->
+<!--            android:layout_marginLeft="2dp"-->
+<!--            android:layout_marginRight="2dp"-->
+<!--            android:text="@string/star_2"-->
+<!--            android:textColor="#dfaa6a"-->
+<!--            android:textStyle="bold" />-->
 
         <TextView
             android:id="@+id/textView9"
@@ -266,7 +266,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_margin="2dp"
-            android:text="@string/github_2"
+            android:text="发送广播"
             android:textColor="#858585" />
     </LinearLayout>
 </RelativeLayout>
