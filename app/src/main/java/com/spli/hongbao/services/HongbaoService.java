@@ -1,4 +1,4 @@
- package xyz.monkeytong.hongbao.services;
+ package com.spli.hongbao.services;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
@@ -16,8 +16,8 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.util.DisplayMetrics;
-import xyz.monkeytong.hongbao.utils.HongbaoSignature;
-import xyz.monkeytong.hongbao.utils.PowerUtil;
+import com.spli.hongbao.utils.HongbaoSignature;
+import com.spli.hongbao.utils.PowerUtil;
 
 import java.util.List;
 

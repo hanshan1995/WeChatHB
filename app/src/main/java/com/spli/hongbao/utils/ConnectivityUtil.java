@@ -1,4 +1,4 @@
-package xyz.monkeytong.hongbao.utils;
+package com.spli.hongbao.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

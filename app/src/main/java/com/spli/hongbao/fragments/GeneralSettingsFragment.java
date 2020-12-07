@@ -1,13 +1,13 @@
-package xyz.monkeytong.hongbao.fragments;
+package com.spli.hongbao.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import xyz.monkeytong.hongbao.R;
-import xyz.monkeytong.hongbao.activities.WebViewActivity;
-import xyz.monkeytong.hongbao.utils.UpdateTask;
+import com.spli.hongbao.R;
+import com.spli.hongbao.activities.WebViewActivity;
+import com.spli.hongbao.utils.UpdateTask;
 
 /**
  * Created by Zhongyi on 2/4/16.

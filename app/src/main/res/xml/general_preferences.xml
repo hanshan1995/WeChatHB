@@ -27,7 +27,7 @@
                 android:title="@string/auto_open_packets"
                 android:layout="@layout/preference_checkbox"
                 android:defaultValue="true"/>
-        <xyz.monkeytong.hongbao.activities.SeekBarPreference
+        <com.spli.hongbao.activities.SeekBarPreference
                 android:key="pref_open_delay"
                 android:title="@string/open_with_delay"
                 pref_kind="pref_open_delay"

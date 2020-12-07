@@ -1,14 +1,20 @@
-package xyz.monkeytong.hongbao.activities;
+package com.spli.hongbao.activities;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.TargetApi;
 import android.app.Activity;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+
+import android.support.v7.app.NotificationCompat;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -16,10 +22,11 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.spli.hongbao.R;
+import com.spli.hongbao.utils.ConnectivityUtil;
+import com.spli.hongbao.utils.UpdateTask;
 import com.tencent.bugly.Bugly;
-import xyz.monkeytong.hongbao.R;
-import xyz.monkeytong.hongbao.utils.ConnectivityUtil;
-import xyz.monkeytong.hongbao.utils.UpdateTask;
 
 import java.util.List;
 
@@ -162,4 +169,39 @@ public class MainActivity extends Activity implements AccessibilityManager.Acces
         }
         return false;
     }
+
+    /**
+     * 发送测试通知
+     *
+     * @param view
+     */
+    public void sendNotification(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        String channelId = createNotificationChannel("my_channel_ID", "my_channel_NAME", NotificationManager.IMPORTANCE_HIGH);
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this)
+                .setContentTitle("通知")
+                .setContentText("收到一条消息")
+                .setContentIntent(pendingIntent)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(100, notification.build());
+
+
+    }
+
+    private String createNotificationChannel(String channelID, String channelNAME, int level) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            NotificationChannel channel = new NotificationChannel(channelID, channelNAME, level);
+            manager.createNotificationChannel(channel);
+            return channelID;
+        } else {
+            return null;
+        }
+    }
+
 }
