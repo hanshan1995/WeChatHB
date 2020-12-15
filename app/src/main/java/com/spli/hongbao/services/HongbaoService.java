@@ -53,6 +53,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
      */
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        Log.i(TAG, "onAccessibilityEvent: ");
         if (sharedPreferences == null) return;
 
         setCurrentActivityName(event);
@@ -74,6 +75,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     }
 
     private void watchChat(AccessibilityEvent event) {
+        Log.i(TAG, "watchChat: ");
         this.rootNodeInfo = getRootInActiveWindow();
 
         if (rootNodeInfo == null) return;
@@ -113,6 +115,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     }
 
     private void openPacket() {
+        Log.i(TAG, "openPacket: ");
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         float dpi = metrics.densityDpi;
         Log.d(TAG, "openPacket！" +  dpi);
@@ -151,6 +154,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     }
 
     private void setCurrentActivityName(AccessibilityEvent event) {
+        Log.i(TAG, "setCurrentActivityName: ");
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             return;
         }
@@ -170,6 +174,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     }
 
     private boolean watchList(AccessibilityEvent event) {
+        Log.i(TAG, "watchList: ");
         if (mListMutex) return false;
         mListMutex = true;
         AccessibilityNodeInfo eventSource = event.getSource();
@@ -196,6 +201,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     }
 
     private boolean  watchNotifications(AccessibilityEvent event) {
+        Log.i(TAG, "watchNotifications: ");
         // Not a notification
         if (event.getEventType() != AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED)
             return false;
@@ -252,6 +258,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
      * @param eventType
      */
     private void checkNodeInfo(int eventType) {
+        Log.i(TAG, "checkNodeInfo: ");
         if (this.rootNodeInfo == null) return;
 
         if (signature.commentString != null) {
@@ -301,6 +308,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     }
 
     private void sendComment() {
+        Log.i(TAG, "sendComment: ");
         try {
             AccessibilityNodeInfo outNode =
                     getRootInActiveWindow().getChild(0).getChild(0);
@@ -319,6 +327,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
 
 
     private boolean hasOneOfThoseNodes(String... texts) {
+        Log.i(TAG, "hasOneOfThoseNodes: ");
         List<AccessibilityNodeInfo> nodes;
         for (String text : texts) {
             if (text == null) continue;
