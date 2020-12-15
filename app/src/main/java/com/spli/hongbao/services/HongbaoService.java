@@ -84,7 +84,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
         checkNodeInfo(event.getEventType());
 
         /* 如果已经接收到红包并且还没有戳开 */
-        Log.d(TAG, "watchChat mLuckyMoneyReceived:" + mLuckyMoneyReceived + " mLuckyMoneyPicked:" + mLuckyMoneyPicked + " mReceiveNode:" + mReceiveNode);
+        Log.d(TAG, "已经接收到红包并且还没有戳开 mLuckyMoneyReceived:" + mLuckyMoneyReceived + " mLuckyMoneyPicked:" + mLuckyMoneyPicked + " mReceiveNode:" + mReceiveNode);
         if (mLuckyMoneyReceived  && (mReceiveNode != null)) {
             mMutex = true;
 
@@ -164,6 +164,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
             getPackageManager().getActivityInfo(componentName, 0);
             currentActivityName = componentName.flattenToShortString();
         } catch (PackageManager.NameNotFoundException e) {
+            Log.w(TAG, "setCurrentActivityName: NameNotFoundException"+e.toString());
             currentActivityName = WECHAT_LUCKMONEY_GENERAL_ACTIVITY;
         }
     }
@@ -181,8 +182,10 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
         //避免当订阅号中出现标题为“[微信红包]拜年红包”（其实并非红包）的信息时误判
         if (!nodes.isEmpty() && currentActivityName.contains(WECHAT_LUCKMONEY_GENERAL_ACTIVITY)) {
             AccessibilityNodeInfo nodeToClick = nodes.get(0);
+            Log.i(TAG, "watchList: nodeToClick="+nodeToClick);
             if (nodeToClick == null) return false;
             CharSequence contentDescription = nodeToClick.getContentDescription();
+            Log.i(TAG, "watchList: contentDescription="+contentDescription);
             if (contentDescription != null && !signature.getContentDescription().equals(contentDescription)) {
                 nodeToClick.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 signature.setContentDescription(contentDescription.toString());
@@ -192,13 +195,14 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
         return false;
     }
 
-    private boolean watchNotifications(AccessibilityEvent event) {
+    private boolean  watchNotifications(AccessibilityEvent event) {
         // Not a notification
         if (event.getEventType() != AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED)
             return false;
 
         // Not a hongbao
         String tip = event.getText().toString();
+        Log.i(TAG, "watchNotifications: tip="+tip);
         if (!tip.contains(WECHAT_NOTIFICATION_TIP)) return true;
 
         Parcelable parcelable = event.getParcelableData();
@@ -243,6 +247,10 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
         return null;
     }
 
+    /**
+     * 检查节点信息
+     * @param eventType
+     */
     private void checkNodeInfo(int eventType) {
         if (this.rootNodeInfo == null) return;
 
