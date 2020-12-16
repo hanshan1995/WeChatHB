@@ -36,19 +36,19 @@ class WxAccessibilityManager(string: String) : HandlerThread(string) {
         super.start()
         checkMsgHandler = object : Handler(this.looper) {
             override fun handleMessage(msg: Message) {
-                Logger.i(TAG, "handleMessage msg.what = " + msg.what)
+                Loger.i(TAG, "handleMessage msg.what = " + msg.what)
                 when (msg.what) {
                     MSG_ADD_PACKET -> {
                         val node = msg.obj
                         if (node != null && node is AccessibilityNodeInfo) {
                             if (getPacketList.isEmpty()) {
-                                Logger.i(TAG, "sendGetPacketMsg $node")
+                                Loger.i(TAG, "sendGetPacketMsg $node")
                                 getPacketList.add(node)
                                 AccessibilityUtil.performClick(getPacketList.last())
                                 getPacketList.removeAt(getPacketList.lastIndex)
                             } else {
                                 if (!NodeUtil.containNode(node, getPacketList)) {
-                                    Logger.i(TAG, "sendGetPacketMsg $node")
+                                    Loger.i(TAG, "sendGetPacketMsg $node")
                                     getPacketList.add(node)
                                     sortGetPacketList()
                                     AccessibilityUtil.performClick(getPacketList.last())

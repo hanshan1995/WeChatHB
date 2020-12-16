@@ -1,4 +1,4 @@
- package com.spli.hongbao.services;
+package com.spli.hongbao.services;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
@@ -11,18 +11,23 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.graphics.Path;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.util.DisplayMetrics;
+
+import com.spli.hongbao.config.ConfigManger;
+import com.spli.hongbao.utils.AccessibilityHelper;
 import com.spli.hongbao.utils.HongbaoSignature;
 import com.spli.hongbao.utils.PowerUtil;
+import com.spli.hongbao.utils.ScreenUtil;
 
 import java.util.List;
 
 public class HongbaoService extends AccessibilityService implements SharedPreferences.OnSharedPreferenceChangeListener {
-    private static final String TAG = "HongbaoService";
+    private static final String TAG = "spli";
     private static final String WECHAT_DETAILS_EN = "Details";
     private static final String WECHAT_DETAILS_CH = "红包详情";
     private static final String WECHAT_BETTER_LUCK_EN = "Better luck next time!";
@@ -30,7 +35,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     private static final String WECHAT_EXPIRES_CH = "已超过24小时";
     private static final String WECHAT_VIEW_SELF_CH = "查看红包";
     private static final String WECHAT_VIEW_OTHERS_CH = "领取红包";
-    private static final String WECHAT_NOTIFICATION_TIP = "[微信红包]";
+    private static final String WECHAT_NOTIFICATION_TIP = "恭喜发财";
     private static final String WECHAT_LUCKMONEY_RECEIVE_ACTIVITY = ".plugin.luckymoney.ui";//com.tencent.mm/.plugin.luckymoney.ui.En_fba4b94f  com.tencent.mm/com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyReceiveUI
     private static final String WECHAT_LUCKMONEY_DETAIL_ACTIVITY = "LuckyMoneyDetailUI";
     private static final String WECHAT_LUCKMONEY_GENERAL_ACTIVITY = "LauncherUI";
@@ -47,6 +52,28 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     private SharedPreferences sharedPreferences;
 
     /**
+     * 红包弹出的class的名字
+     */
+    private static final String ACTIVITY_DIALOG_LUCKYMONEY = "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyNotHookReceiveUI";
+
+    /**
+     * 红包详情页
+     */
+    private static String LUCKY_MONEY_DETAIL = "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI";
+
+    /**
+     * 聊天列表页 class name
+     */
+    private static String CHAT_LIST_PAGE = " com.tencent.mm.ui.LauncherUI";
+
+    /**
+     * 获取屏幕宽高
+     */
+    private int screenWidth = ScreenUtil.SCREEN_WIDTH;
+    private int screenHeight = ScreenUtil.SCREEN_HEIGHT;
+    private boolean isHongBaoOpen = false;
+
+    /**
      * AccessibilityEvent
      *
      * @param event 事件
@@ -54,24 +81,54 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         Log.i(TAG, "onAccessibilityEvent: ");
-        if (sharedPreferences == null) return;
-
-        setCurrentActivityName(event);
-
-        /* 检测通知消息 */
-        if (!mMutex) {
-            //监测系统通知
-            if (sharedPreferences.getBoolean("pref_watch_notification", false) && watchNotifications(event)) return;
-            //监测聊天列表
-            if (sharedPreferences.getBoolean("pref_watch_list", false) && watchList(event)) return;
-            mListMutex = false;
+        String className = event.getClassName().toString();
+        Log.i(TAG, "onAccessibilityEvent: className=" + className);
+        //当前为红包弹出窗
+        if (className.equals(ACTIVITY_DIALOG_LUCKYMONEY)) {
+            Log.i(TAG, "onAccessibilityEvent: 当前为红包弹出窗");
+            int delay = sharedPreferences.getInt("pref_open_delay", 0) * 1000;
+            SystemClock.sleep(delay);
+            AccessibilityHelper.openPackage(this);
+            isHongBaoOpen = true;
+            return;
         }
-
-        if (!mChatMutex) {
-            mChatMutex = true;
-            if (sharedPreferences.getBoolean("pref_watch_chat", false)) watchChat(event);
-            mChatMutex = false;
+        //红包领取后的详情页面自动返回
+        if (className.equals(LUCKY_MONEY_DETAIL)) {
+            //返回聊天界面
+            if (isHongBaoOpen) {
+                SystemClock.sleep(1000);
+                performGlobalAction(GLOBAL_ACTION_BACK);
+                isHongBaoOpen = false;
+            }
+            return;
         }
+        AccessibilityNodeInfo hongBaoParent = AccessibilityHelper.findHongBaoNode2(this, event);
+        if (hongBaoParent != null) {
+            Log.i(TAG, "onAccessibilityEvent: 找到红包，点击红包");
+            int delay2 = sharedPreferences.getInt("pref_open_delay", 0) * 1000;
+            SystemClock.sleep(delay2);
+            boolean success = AccessibilityHelper.clickHongbao(hongBaoParent);
+            Log.i(TAG, "onAccessibilityEvent: " + (success ? "红包被点击了" : "红包没有被点击"));
+        }
+//        if (sharedPreferences == null) return;
+//
+//        setCurrentActivityName(event);
+//
+//        /* 检测通知消息 */
+//        if (!mMutex) {
+//            //监测系统通知
+//            if (sharedPreferences.getBoolean("pref_watch_notification", false) && watchNotifications(event))
+//                return;
+//            //监测聊天列表
+//            if (sharedPreferences.getBoolean("pref_watch_list", false) && watchList(event)) return;
+//            mListMutex = false;
+//        }
+//
+//        if (!mChatMutex) {
+//            mChatMutex = true;
+//            if (sharedPreferences.getBoolean("pref_watch_chat", false)) watchChat(event);
+//            mChatMutex = false;
+//        }
     }
 
     private void watchChat(AccessibilityEvent event) {
@@ -87,10 +144,11 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
 
         /* 如果已经接收到红包并且还没有戳开 */
         Log.d(TAG, "已经接收到红包并且还没有戳开 mLuckyMoneyReceived:" + mLuckyMoneyReceived + " mLuckyMoneyPicked:" + mLuckyMoneyPicked + " mReceiveNode:" + mReceiveNode);
-        if (mLuckyMoneyReceived  && (mReceiveNode != null)) {
+        if (mLuckyMoneyReceived && (mReceiveNode != null)) {
             mMutex = true;
 
-            mReceiveNode.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            boolean result = mReceiveNode.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            Log.i(TAG, "watchChat: 戳开红包=" + result);
             mLuckyMoneyReceived = false;
             mLuckyMoneyPicked = true;
         }
@@ -114,11 +172,14 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
         }
     }
 
+    /**
+     * 打开红包
+     */
     private void openPacket() {
         Log.i(TAG, "openPacket: ");
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         float dpi = metrics.densityDpi;
-        Log.d(TAG, "openPacket！" +  dpi);
+        Log.d(TAG, "openPacket！" + dpi);
         if (android.os.Build.VERSION.SDK_INT <= 23) {
             mUnpackNode.performAction(AccessibilityNodeInfo.ACTION_CLICK);
         } else {
@@ -126,9 +187,9 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
                 Path path = new Path();
                 if (640 == dpi) { //1440
                     path.moveTo(720, 1575);
-                } else if(320 == dpi){//720p
+                } else if (320 == dpi) {//720p
                     path.moveTo(355, 780);
-                }else if(480 == dpi){//1080p
+                } else if (480 == dpi) {//1080p
                     path.moveTo(533, 1115);
                 }
                 GestureDescription.Builder builder = new GestureDescription.Builder();
@@ -168,7 +229,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
             getPackageManager().getActivityInfo(componentName, 0);
             currentActivityName = componentName.flattenToShortString();
         } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "setCurrentActivityName: NameNotFoundException"+e.toString());
+            Log.w(TAG, "setCurrentActivityName: NameNotFoundException" + e.toString());
             currentActivityName = WECHAT_LUCKMONEY_GENERAL_ACTIVITY;
         }
     }
@@ -181,26 +242,25 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
         // Not a message
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED || eventSource == null)
             return false;
-
         List<AccessibilityNodeInfo> nodes = eventSource.findAccessibilityNodeInfosByText(WECHAT_NOTIFICATION_TIP);
         //增加条件判断currentActivityName.contains(WECHAT_LUCKMONEY_GENERAL_ACTIVITY)
         //避免当订阅号中出现标题为“[微信红包]拜年红包”（其实并非红包）的信息时误判
         if (!nodes.isEmpty() && currentActivityName.contains(WECHAT_LUCKMONEY_GENERAL_ACTIVITY)) {
             AccessibilityNodeInfo nodeToClick = nodes.get(0);
-            Log.i(TAG, "watchList: nodeToClick="+nodeToClick);
+            Log.i(TAG, "watchList: nodeToClick=" + nodeToClick);
             if (nodeToClick == null) return false;
             CharSequence contentDescription = nodeToClick.getContentDescription();
-            Log.i(TAG, "watchList: contentDescription="+contentDescription);
-            if (contentDescription != null && !signature.getContentDescription().equals(contentDescription)) {
-                nodeToClick.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                signature.setContentDescription(contentDescription.toString());
-                return true;
-            }
+            Log.i(TAG, "watchList: contentDescription=" + contentDescription);
+//              if (contentDescription != null && !signature.getContentDescription().equals(contentDescription)) {
+            nodeToClick.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+//                signature.setContentDescription(contentDescription.toString());
+            return true;
+//            }
         }
         return false;
     }
 
-    private boolean  watchNotifications(AccessibilityEvent event) {
+    private boolean watchNotifications(AccessibilityEvent event) {
         Log.i(TAG, "watchNotifications: ");
         // Not a notification
         if (event.getEventType() != AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED)
@@ -208,7 +268,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
 
         // Not a hongbao
         String tip = event.getText().toString();
-        Log.i(TAG, "watchNotifications: tip="+tip);
+        Log.i(TAG, "watchNotifications: tip=" + tip);
         if (!tip.contains(WECHAT_NOTIFICATION_TIP)) return true;
 
         Parcelable parcelable = event.getParcelableData();
@@ -231,6 +291,12 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
 
     }
 
+    /**
+     * 查找打开按钮
+     *
+     * @param node
+     * @return
+     */
     private AccessibilityNodeInfo findOpenButton(AccessibilityNodeInfo node) {
         if (node == null)
             return null;
@@ -255,6 +321,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
 
     /**
      * 检查节点信息
+     *
      * @param eventType
      */
     private void checkNodeInfo(int eventType) {
@@ -283,7 +350,7 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
 
         /* 戳开红包，红包还没抢完，遍历节点匹配“拆红包” */
         AccessibilityNodeInfo node2 = findOpenButton(this.rootNodeInfo);
-        Log.d(TAG, "checkNodeInfo  node2 " + node2);
+        Log.d(TAG, "checkNodeInfo  node2=" + node2);
         if (node2 != null && "android.widget.Button".equals(node2.getClassName()) && currentActivityName.contains(WECHAT_LUCKMONEY_RECEIVE_ACTIVITY)
                 && (mUnpackNode == null || mUnpackNode != null && !mUnpackNode.equals(node2))) {
             mUnpackNode = node2;
@@ -295,8 +362,8 @@ public class HongbaoService extends AccessibilityService implements SharedPrefer
         boolean hasNodes = this.hasOneOfThoseNodes(
                 WECHAT_BETTER_LUCK_CH, WECHAT_DETAILS_CH,
                 WECHAT_BETTER_LUCK_EN, WECHAT_DETAILS_EN, WECHAT_EXPIRES_CH);
-        Log.d(TAG, "checkNodeInfo  hasNodes:" + hasNodes + " mMutex:"+ mMutex);
-        if ( eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && hasNodes
+        Log.d(TAG, "checkNodeInfo  hasNodes:" + hasNodes + " mMutex:" + mMutex);
+        if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && hasNodes
                 && (currentActivityName.contains(WECHAT_LUCKMONEY_DETAIL_ACTIVITY)
                 || currentActivityName.contains(WECHAT_LUCKMONEY_RECEIVE_ACTIVITY))) {
             mMutex = false;
